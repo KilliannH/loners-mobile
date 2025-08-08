@@ -11,6 +11,7 @@ const config: ExpoConfig = {
   userInterfaceStyle: "light",
   splash: { image: "./assets/splash.png", resizeMode: "contain", backgroundColor: "#ffffff" },
   ios: {
+    bundleIdentifier: "com.loners.app",
     supportsTablet: true,
     infoPlist: {
       NSLocationWhenInUseUsageDescription: "We use your location to show nearby events.",
@@ -18,13 +19,15 @@ const config: ExpoConfig = {
     }
   },
   android: {
+    package: "com.loners.app",
     adaptiveIcon: { foregroundImage: "./assets/icon.png", backgroundColor: "#ffffff" },
     permissions: ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"]
   },
   experiments: { typedRoutes: true },
   extra: {
-    eas: { projectId: "REPLACE_ME" }
-  }
+    eas: { projectId: "0d77a0ae-a23e-4722-b0b2-f48d3f2d5779" }
+  },
+  owner: "killiann"
 };
 
 export default config;
