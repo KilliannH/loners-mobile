@@ -16,12 +16,14 @@ const config: ExpoConfig = {
     infoPlist: {
       NSLocationWhenInUseUsageDescription: "We use your location to show nearby events.",
       NSLocationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby events.",
-    }
+    },
+    config: { googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS }
   },
   android: {
     package: "com.loners.app",
     adaptiveIcon: { foregroundImage: "./assets/icon.png", backgroundColor: "#ffffff" },
-    permissions: ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"]
+    permissions: ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+    config: { googleMaps: { apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID } }
   },
   experiments: { typedRoutes: true },
   extra: {
