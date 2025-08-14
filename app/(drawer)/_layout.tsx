@@ -6,7 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 export default function TabsLayout() {
   const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <Drawer

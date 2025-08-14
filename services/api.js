@@ -27,48 +27,34 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  res => res,
+  async (err) => {
+    if (err.response?.status === 401) {
+      const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = "Bearer " + token;
-            return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
+      if (!refreshToken) {
+        console.log("❌ No refresh token available");
+        return Promise.reject(err);
       }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
 
       try {
-        const refreshToken = await SecureStore.getItemAsync("refreshToken");
-        if (!refreshToken) throw new Error("No refresh token");
+        const { data } = await api.post("/auth/refresh", { refreshToken });
+        await SecureStore.setItemAsync("token", data.token);
+        if (data.refreshToken) {
+          await SecureStore.setItemAsync("refreshToken", data.refreshToken);
+        }
 
-        const res = await axios.post(`${process.env.EXPO_PUBLIC_API_URL}/auth/refresh`, { refreshToken });
-
-        await SecureStore.setItemAsync("token", res.data.token);
-        await SecureStore.setItemAsync("refreshToken", res.data.refreshToken);
-
-        api.defaults.headers.common.Authorization = "Bearer " + res.data.token;
-        processQueue(null, res.data.token);
-
-        return api(originalRequest);
-      } catch (err) {
-        processQueue(err, null);
+        err.config.headers.Authorization = `Bearer ${data.token}`;
+        return api.request(err.config); // rejoue la requête
+      } catch (refreshErr) {
+        console.log("❌ Refresh token failed", refreshErr);
         await SecureStore.deleteItemAsync("token");
         await SecureStore.deleteItemAsync("refreshToken");
-        return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
+        return Promise.reject(refreshErr);
       }
     }
-    return Promise.reject(error);
+
+    return Promise.reject(err);
   }
 );
 

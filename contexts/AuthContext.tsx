@@ -60,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUser = await SecureStore.getItemAsync("user");
       const token = await SecureStore.getItemAsync("token");
 
+      console.log("📦 Récupéré depuis SecureStore:", { token, storedUser });
+
       if (storedUser && token) {
         setUser(JSON.parse(storedUser));
         try {
@@ -67,24 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(me.data);
           await SecureStore.setItemAsync("user", JSON.stringify(me.data));
         } catch (err) {
-          console.log("⚠️ Token peut-être expiré, tentative de refresh...");
-          const refreshToken = await SecureStore.getItemAsync("refreshToken");
-          if (refreshToken) {
-            try {
-              const { data } = await api.post("/auth/refresh", { refreshToken });
-              await SecureStore.setItemAsync("token", data.token);
-              await SecureStore.setItemAsync("refreshToken", data.refreshToken || refreshToken);
-              const me = await api.get("/users/me");
-              setUser(me.data);
-              await SecureStore.setItemAsync("user", JSON.stringify(me.data));
-            } catch {
-              await logout();
-            }
-          } else {
-            await logout();
-          }
+          console.log("⚠️ Impossible de récupérer /me :", err);
+          // Tentative de refresh dans un autre bloc si nécessaire
         }
       }
+
       setLoading(false);
     })();
   }, []);
@@ -98,13 +87,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithGoogle = async (googleUser: User, token: string, refreshToken?: string) => {
-  await SecureStore.setItemAsync("token", token);
-  if (refreshToken) {
-    await SecureStore.setItemAsync("refreshToken", refreshToken);
-  }
-  await SecureStore.setItemAsync("user", JSON.stringify(googleUser));
-  setUser(googleUser);
-};
+    await SecureStore.setItemAsync("token", token);
+    if (refreshToken) {
+      await SecureStore.setItemAsync("refreshToken", refreshToken);
+    }
+    await SecureStore.setItemAsync("user", JSON.stringify(googleUser));
+    setUser(googleUser);
+  };
 
   const signup = async (username: string, email: string, password: string) => {
     const { data } = await api.post("/auth/signup", { username, email, password });
