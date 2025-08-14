@@ -3,8 +3,10 @@ import { EventItem } from "@/types/types";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   Image,
+  ScrollView,
   Text,
   TouchableOpacity,
   View
@@ -23,6 +25,7 @@ const useLiveLocationMock = () => {
   return pos;
 };
 
+const SCREEN_WIDTH = Dimensions.get("window").width;
 const pageSize = 30;
 
 export default function HomeScreen() {
@@ -110,114 +113,135 @@ export default function HomeScreen() {
   }, [position, typeFilter, fetchEvents]);
 
   return (
-  <View style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
-    <FlatList
-      data={events}
-      keyExtractor={(item) => item._id}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 24 }}
-      // ---------- Header: Map + Greeting + Count ----------
-      ListHeaderComponent={
-        <View style={{ padding: 16, paddingBottom: 8 }}>
-          <View
-            style={{
-              borderRadius: 16,
-              overflow: "hidden",
-              backgroundColor: "#e5e7eb",
-              height: 200,
-            }}
+  <ScrollView
+    style={{ flex: 1, backgroundColor: "#f3f4f6" }}
+    contentContainerStyle={{ paddingBottom: 32 }}
+    showsVerticalScrollIndicator={false}
+  >
+    {/* --- Map + Greeting + Count --- */}
+    <View style={{ padding: 16, paddingBottom: 8 }}>
+      <View
+        style={{
+          borderRadius: 16,
+          overflow: "hidden",
+          backgroundColor: "#e5e7eb",
+          height: 200,
+        }}
+      >
+        {region ? (
+          <MapView
+            style={{ flex: 1 }}
+            initialRegion={region}
+            provider="google"
+            scrollEnabled={false}
+            zoomEnabled={false}
+            onRegionChangeComplete={setRegion}
           >
-            {region ? (
-              <MapView
-                style={{ flex: 1 }}
-                initialRegion={region}
-                provider="google"
-                scrollEnabled={false}
-                zoomEnabled={false}
-                onRegionChangeComplete={setRegion}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: region.latitude,
-                    longitude: region.longitude,
-                  }}
-                  title="Moi"
-                  pinColor="#3b82f6"
-                />
-                {events.map((ev) => (
-                  <Marker
-                    key={ev._id}
-                    coordinate={{
-                      latitude: ev.location.coordinates.coordinates[1],
-                      longitude: ev.location.coordinates.coordinates[0],
-                    }}
-                    title={ev.name}
-                  />
-                ))}
-              </MapView>
-            ) : (
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                <ActivityIndicator />
-              </View>
-            )}
-          </View>
-
-          {/* Greeting */}
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
-            <Image
-              source={
-                user?.avatarUrl
-                  ? { uri: user.avatarUrl }
-                  : require("../../assets/avatar_fallback.png")
-              }
-              style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
+            <Marker
+              coordinate={{
+                latitude: region.latitude,
+                longitude: region.longitude,
+              }}
+              title="Moi"
+              pinColor="#3b82f6"
             />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 18, fontWeight: "700" }}>
-                Salut {user?.username} 👋
-              </Text>
-              <Text style={{ color: "#6b7280" }}>
-                Voici ce qui se passe près de toi
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => position && fetchEvents(0)} style={{ padding: 8 }}>
-              <Text style={{ color: "#3b82f6" }}>Actualiser</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Count */}
-          <View style={{ alignItems: "center", marginTop: 12 }}>
-            {loading ? (
-              <Text style={{ color: "#6b7280" }}>Recherche d’événements…</Text>
-            ) : (
-              <Text style={{ color: "#6b7280" }}>{totalEvents} événement(s) trouvé(s)</Text>
-            )}
-          </View>
-        </View>
-      }
-      // ---------- Items ----------
-      renderItem={({ item, index }) => (
-        <View style={{ paddingHorizontal: 16 }}>
-          <EventCard item={item} isLast={index === events.length - 1} />
-        </View>
-      )}
-      // ---------- Infinite scroll ----------
-      onEndReachedThreshold={0.4}
-      onEndReached={() => {
-        if (hasMore && !isFetchingMore) {
-          fetchEvents(page + 1);
-        }
-      }}
-      // ---------- Footer (loader) ----------
-      ListFooterComponent={
-        isFetchingMore ? (
-          <View style={{ paddingVertical: 16 }}>
+            {events.map((ev) => (
+              <Marker
+                key={ev._id}
+                coordinate={{
+                  latitude: ev.location.coordinates.coordinates[1],
+                  longitude: ev.location.coordinates.coordinates[0],
+                }}
+                title={ev.name}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <ActivityIndicator />
           </View>
-        ) : null
-      }
-    />
-  </View>
+        )}
+      </View>
+
+      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
+        <Image
+          source={
+            user?.avatarUrl
+              ? { uri: user.avatarUrl }
+              : require("../../assets/avatar_fallback.png")
+          }
+          style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 18, fontWeight: "700" }}>
+            Salut {user?.username} 👋
+          </Text>
+          <Text style={{ color: "#6b7280" }}>
+            Voici ce qui se passe près de toi
+          </Text>
+        </View>
+        <TouchableOpacity onPress={() => position && fetchEvents(0)} style={{ padding: 8 }}>
+          <Text style={{ color: "#3b82f6" }}>Actualiser</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ alignItems: "center", marginTop: 12 }}>
+        {loading ? (
+          <Text style={{ color: "#6b7280" }}>Recherche d’événements…</Text>
+        ) : (
+          <Text style={{ color: "#6b7280" }}>
+            {totalEvents} événement(s) trouvé(s)
+          </Text>
+        )}
+      </View>
+    </View>
+
+    {/* --- Carousel horizontal (3 cards/slide) --- */}
+    {groupedEvents.length > 0 && (
+      <View style={{ height: 350, marginTop: 8, paddingBottom: 16 }}>
+        <FlatList
+          data={groupedEvents}
+          keyExtractor={(_, index) => `group-${index}`}
+          horizontal
+          pagingEnabled
+          decelerationRate="fast"
+          snapToAlignment="start"
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item, index }) => (
+            <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 16 }}>
+              {item.map((ev, idx) => (
+                <EventCard
+                  key={ev._id}
+                  item={ev}
+                  isLast={index === groupedEvents.length - 1 && idx === item.length - 1}
+                />
+              ))}
+            </View>
+          )}
+          onEndReachedThreshold={0.6}
+          onEndReached={() => {
+            if (hasMore && !isFetchingMore) {
+              fetchEvents(page + 1);
+            }
+          }}
+          ListFooterComponent={
+            isFetchingMore ? (
+              <View style={{ paddingVertical: 16 }}>
+                <ActivityIndicator />
+              </View>
+            ) : null
+          }
+        />
+      </View>
+    )}
+
+    {/* --- Loader supplémentaire (si besoin) --- */}
+    {isFetchingMore && (
+      <View style={{ paddingVertical: 16 }}>
+        <ActivityIndicator />
+      </View>
+    )}
+  </ScrollView>
 );
 }
 
@@ -235,7 +259,7 @@ function EventCard({
         padding: 14,
         borderRadius: 12,
         marginTop: 12,
-        marginBottom: isLast ? 100 : 0, // espace en bas SANS carrousel
+        marginBottom: isLast ? 32 : 0, // espace en bas si c’est la dernière
         borderWidth: 1,
         borderColor: "#e5e7eb",
         shadowColor: "#000",
