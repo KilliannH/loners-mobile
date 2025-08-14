@@ -4,25 +4,42 @@ const config: ExpoConfig = {
   name: "Loners",
   slug: "loners-mobile",
   scheme: "loners",
-  plugins: ["expo-router"],
+  plugins: [
+    [
+      "expo-router",
+      {
+        root: "./app"
+      }
+    ]
+  ],
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
-  splash: { image: "./assets/splash.png", resizeMode: "contain", backgroundColor: "#ffffff" },
+  splash: {
+    image: "./assets/splash.png",
+    resizeMode: "contain",
+    backgroundColor: "#ffffff"
+  },
   ios: {
     bundleIdentifier: "com.loners.app",
     supportsTablet: true,
     infoPlist: {
       NSLocationWhenInUseUsageDescription: "We use your location to show nearby events.",
-      NSLocationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby events.",
+      NSLocationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby events."
     },
     config: { googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS }
   },
   android: {
     package: "com.loners.app",
-    adaptiveIcon: { foregroundImage: "./assets/icon.png", backgroundColor: "#ffffff" },
-    permissions: ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+    adaptiveIcon: {
+      foregroundImage: "./assets/icon.png",
+      backgroundColor: "#ffffff"
+    },
+    permissions: [
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_COARSE_LOCATION"
+    ],
     config: { googleMaps: { apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID } }
   },
   experiments: { typedRoutes: true },

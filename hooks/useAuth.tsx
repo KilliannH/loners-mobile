@@ -1,8 +1,14 @@
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../lib/api";
+import api from "../services/api";
 
-interface User { _id: string; username: string; email: string; avatarUrl?: string }
+interface User {
+  _id: string;
+  username: string;
+  email: string;
+  avatarUrl?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -18,25 +24,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     (async () => {
-      const token = await SecureStore.getItemAsync("token");
+      const token = await SecureStore.getItemAsync("accessToken");
       if (token) {
         try {
-          const me = await api.get("/api/users/me");
+          const me = await api.get("/users/me");
           setUser(me.data);
-        } catch {}
+        } catch {
+          // Si le token est invalide, on laisse le refresh interceptor gérer
+        }
       }
       setLoading(false);
     })();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { data } = await api.post("/api/auth/login", { email, password });
-    await SecureStore.setItemAsync("token", data.token);
+    const { data } = await api.post("/auth/login", { email, password });
+    await SecureStore.setItemAsync("accessToken", data.accessToken);
+    await SecureStore.setItemAsync("refreshToken", data.refreshToken);
     setUser(data.user);
   };
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync("token");
+    await SecureStore.deleteItemAsync("accessToken");
+    await SecureStore.deleteItemAsync("refreshToken");
     setUser(null);
   };
 
