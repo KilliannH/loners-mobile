@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 import Carousel from "react-native-reanimated-carousel";
+import { useAuth } from "../../hooks/useAuth";
 
 // Pour mocker la position
 const useLiveLocationMock = () => {
@@ -19,7 +20,8 @@ const useLiveLocationMock = () => {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const pageSize = 30;
 
-export default function HomeScreen({ user, onLogout }: { user: any; onLogout: () => Promise<void> }) {
+export default function HomeScreen() {
+  const { user } = useAuth();
   const position = useLiveLocationMock();
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -100,21 +102,16 @@ export default function HomeScreen({ user, onLogout }: { user: any; onLogout: ()
     if (position) fetchEvents(0);
   }, [position, typeFilter, fetchEvents]);
 
-  const handleSnapToItem = (index: number) => {
-    const currentGroup = groupedEvents[index] || [];
-    if (hasMore && index >= groupedEvents.length - 1) {
-      fetchEvents(page + 1);
-    }
-    console.log("🎯 Slide index:", index, "Group size:", currentGroup.length);
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: "#f3f4f6" }}>
+      {/* Bouton Logout en haut à droite */}
+      <View style={{ padding: 16, alignItems: "flex-end" }}>
+      </View>
       {/* --- Map --- */}
       <View style={{ padding: 16, paddingBottom: 8 }}>
         <View style={{ borderRadius: 16, overflow: "hidden", backgroundColor: "#e5e7eb", height: 200 }}>
           {region ? (
-            <MapView style={{ flex: 1 }} initialRegion={region} onRegionChangeComplete={setRegion}>
+            <MapView style={{ flex: 1 }} initialRegion={region} provider="google" onRegionChangeComplete={setRegion}>
               <Marker coordinate={{ latitude: region.latitude, longitude: region.longitude }} title="Moi" pinColor="#3b82f6" />
               {events.map((ev) => (
                 <Marker
@@ -136,7 +133,11 @@ export default function HomeScreen({ user, onLogout }: { user: any; onLogout: ()
 
         {/* --- Greeting --- */}
         <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
-          <Image source={{ uri: user?.avatarUrl }} style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }} />
+          <Image source={
+            user?.avatarUrl
+              ? { uri: user.avatarUrl }
+              : require("../../assets/avatar_fallback.png")
+          } style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }} />
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 18, fontWeight: "700" }}>Salut {user?.username} 👋</Text>
             <Text style={{ color: "#6b7280" }}>Voici ce qui se passe près de toi</Text>
