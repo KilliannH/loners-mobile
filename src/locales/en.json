@@ -2,44 +2,36 @@
   "common": {
     "back": "Back",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "delete": "Delete"
   },
   "nav": {
     "home": "Home",
     "profile": "Profile",
     "messages": "Messages"
   },
-  "home": {
-    "hello": "Hi {{name}} 👋",
-    "nearby": "Here's what's happening near you",
-    "searching": "Searching for events…",
-    "foundCount": "{{count}} event(s) found",
-    "refreshLocation": "Refresh my location",
-    "filters": {
-      "allTypes": "All types"
-    }
-  },
   "event": {
-    "participants_one": "{{count}} participant",
-    "participants_other": "{{count}} participants",
+    "participants": "{{count}} participant",
+    "participants_plural": "{{count}} participants",
     "type": "Type",
     "date": "Date",
     "at": "at",
     "join": "Join event",
     "leave": "Leave event",
     "goToChat": "Go to chat",
-    "delete": "Delete",
-    "confirmDelete": "Are you sure you want to delete this event?",
-    "notFound": "No event found",
-    "loading": "Loading…"
+    "delete": "Delete"
   },
-  "createEvent": {
-    "types": {
-      "concert": "Concert",
-      "spectacle": "Show",
-      "soiree_a_theme": "Theme night",
-      "expo": "Exhibition",
-      "autre": "Other"
+  "eventDetails": {
+    "errorLoad": "Unable to load the event.",
+    "errorJoin": "Unable to join the event.",
+    "errorLeave": "Unable to leave the event.",
+    "errorDelete": "Unable to delete the event.",
+    "successDelete": "Event deleted.",
+    "notFound": "No event found",
+    "toast": {
+      "joined": "You have joined the event",
+      "left": "You have left the event",
+      "deleted": "Event deleted successfully"
     }
   },
   "profile": {
@@ -49,6 +41,23 @@
     "noCreated": "No created events.",
     "noJoined": "You are not participating in any events."
   },
+  "updateProfile": {
+    "title": "My profile",
+    "fields": {
+      "username": "Username",
+      "bioLabel": "Bio",
+      "bio": "A few words about you",
+      "avatarUrl": "Avatar URL (optional)"
+    },
+    "status": {
+      "submit": "Update",
+      "loading": "Updating..."
+    },
+    "toast": {
+      "success": "Profile updated",
+      "error": "Profile update failed"
+    }
+  },
   "editEvent": {
     "title": "Edit event",
     "name": "Name",
@@ -56,6 +65,36 @@
     "type": "Type",
     "location": "Location",
     "futureError": "Date/time must be in the future.",
-    "save": "Save changes"
+    "save": "Save changes",
+    "loadError": "Unable to load the event.",
+    "updateError": "Unable to update the event.",
+    "toast": {
+      "updated": "Event updated successfully"
+    }
+  },
+  "home": {
+    "hello": "Hello {{name}} 👋",
+    "nearby": "Events near you",
+    "searching": "Searching...",
+    "foundCount": "{{count}} event(s) found",
+    "filters": {
+      "allTypes": "All types"
+    },
+    "refreshLocation": "Refresh location",
+    "meMarker": "Me"
+  },
+  "createEvent": {
+    "types": {
+      "concert": "Concert",
+      "spectacle": "Show",
+      "soiree_a_theme": "Theme night",
+      "expo": "Exhibition",
+      "festival": "Festival",
+      "autre": "Other"
+    },
+    "toast": {
+      "created": "Event created successfully",
+      "error": "Unable to create the event"
+    }
   }
 }

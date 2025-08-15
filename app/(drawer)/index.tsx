@@ -4,8 +4,9 @@ import api from "@/services/api";
 import { EventItem } from "@/types/types";
 import { availableTypes as baseTypes } from "@/utils/eventTypes";
 import { Picker } from "@react-native-picker/picker";
+import { useFocusEffect } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import { usePathname, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { MapPin, Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -32,7 +33,7 @@ const useLiveLocationMock = () => {
   useEffect(() => {
     const mock = { lat: 47.2184, lng: -1.5536 };
     setPos(mock);
-    console.log("📍 Mock position utilisée :", mock.lat, mock.lng);
+    console.log("📍", mock.lat, mock.lng);
   }, []);
   return pos;
 };
@@ -41,10 +42,9 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 const pageSize = 30;
 
 export default function HomeScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
 
   const position = useLiveLocationMock();
   const [region, setRegion] = useState<Region | null>(null);
@@ -73,6 +73,12 @@ export default function HomeScreen() {
     [events, groupEvents]
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchEvents(); // ta fonction qui recharge les events
+    }, [])
+  );
+
   useEffect(() => {
     if (position) {
       setRegion({
@@ -91,14 +97,6 @@ export default function HomeScreen() {
       else setIsFetchingMore(true);
 
       try {
-        console.log("🔍 Fetch events", {
-          lat: position.lat,
-          lng: position.lng,
-          offset: newPage * pageSize,
-          limit: pageSize,
-          type: typeFilter,
-        });
-
         const res = await api.get("/events/nearby", {
           params: {
             lat: position.lat,
@@ -132,27 +130,24 @@ export default function HomeScreen() {
   }, [position, typeFilter, fetchEvents]);
 
   const handlePressIn = () => {
-  Animated.spring(scaleAnim, {
-    toValue: 0.95, // rétrécit un peu au clic
-    useNativeDriver: true,
-  }).start();
-};
+    Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
 
-const handlePressOut = () => {
-  Animated.spring(scaleAnim, {
-    toValue: 1.05, // petit zoom
-    friction: 3,
-    tension: 40,
-    useNativeDriver: true,
-  }).start(() => {
+  const handlePressOut = () => {
     Animated.spring(scaleAnim, {
-      toValue: 1, // retour à normal
+      toValue: 1.05,
       friction: 3,
       tension: 40,
       useNativeDriver: true,
-    }).start();
-  });
-};
+    }).start(() => {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
 
   return (
     <>
@@ -163,14 +158,12 @@ const handlePressOut = () => {
       >
         {/* --- Map + Greeting + Count --- */}
         <View style={{ padding: 16, paddingBottom: 8 }}>
-          <View
-            style={{
-              borderRadius: 16,
-              overflow: "hidden",
-              backgroundColor: "#e5e7eb",
-              height: 200,
-            }}
-          >
+          <View style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: "#e5e7eb",
+            height: 200,
+          }}>
             {region ? (
               <MapView
                 style={{ flex: 1 }}
@@ -185,7 +178,7 @@ const handlePressOut = () => {
                     latitude: region.latitude,
                     longitude: region.longitude,
                   }}
-                  title="Moi"
+                  title={t("home.meMarker")}
                   pinColor="#3b82f6"
                 />
                 {(groupedEvents[activeIndex] ?? []).map((ev) => (
@@ -215,12 +208,15 @@ const handlePressOut = () => {
               }
               style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
             />
-            <View style={{ alignItems: "center" }}>
-              <Text style={{ fontSize: 18, fontWeight: "700" }}>
+            <View>
+              {/* Centré */}
+              <Text style={{ fontSize: 18, fontWeight: "700", textAlign: "center" }}>
                 {t("home.hello", { name: user?.username ?? "" })}
               </Text>
-              <Text style={{ color: "#6b7280" }}>
-                {t("home.nearby")}
+
+              {/* Aligné à gauche */}
+              <Text style={{ color: "#6b7280", textAlign: "left" }}>
+                {t("home.nearby")} :
               </Text>
             </View>
           </View>
@@ -230,48 +226,39 @@ const handlePressOut = () => {
               <Text style={{ color: "#6b7280" }}>{t("home.searching")}</Text>
             ) : (
               <Text style={{ color: "#6b7280" }}>
-                {totalEvents} {t("home.foundCount", { count: totalEvents })}
+                {t("home.foundCount", { count: totalEvents })}
               </Text>
             )}
           </View>
         </View>
 
         {/* --- Filters + Refresh position row --- */}
-        <View
-          style={{
-            marginTop: 12,
-            paddingHorizontal: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          {/* Picker compact (≈ 50% width) */}
+        <View style={{
+          marginTop: 12,
+          paddingHorizontal: 16,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}>
+          {/* Picker compact */}
           <View style={{ flexBasis: "50%", flexGrow: 0 }}>
-            <View
-              style={{
-                borderWidth: 1,
-                borderColor: "#e5e7eb",
-                borderRadius: 10,
-                backgroundColor: "#fff",
-                overflow: "hidden",
-                height: 40, // hauteur compacte
-                justifyContent: "center",
-              }}
-            >
+            <View style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 10,
+              backgroundColor: "#fff",
+              overflow: "hidden",
+              height: 40,
+              justifyContent: "center",
+            }}>
               <Picker
                 selectedValue={typeFilter}
                 onValueChange={(value) => setTypeFilter(value)}
                 mode="dropdown"
                 dropdownIconColor="#6b7280"
-                style={{
-                  height: 40,          // compacte (Android)
-                  paddingVertical: 0,  // compacte (iOS)
-                }}
-                itemStyle={{
-                  fontSize: 13,        // compacte (iOS)
-                }}
+                style={{ height: 40, paddingVertical: 0 }}
+                itemStyle={{ fontSize: 13 }}
               >
                 {availableTypes.map((tkey) => (
                   <Picker.Item
@@ -284,7 +271,7 @@ const handlePressOut = () => {
             </View>
           </View>
 
-          {/* Bouton texte bleu */}
+          {/* Refresh location */}
           <TouchableOpacity
             onPress={() => position && fetchEvents(0)}
             style={{ flexDirection: "row", alignItems: "center" }}
@@ -296,7 +283,7 @@ const handlePressOut = () => {
           </TouchableOpacity>
         </View>
 
-        {/* --- Carousel horizontal (3 cards/slide) --- */}
+        {/* --- Carousel --- */}
         {groupedEvents.length > 0 && (
           <View style={{ marginTop: 8, paddingBottom: 16 }}>
             <FlatList
@@ -322,13 +309,9 @@ const handlePressOut = () => {
               onMomentumScrollEnd={(e) => {
                 const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
                 setActiveIndex(idx);
-
-                // 👉 pagination fiable: quand on atteint l'avant-dernier/dernier slide
                 if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 1) {
                   fetchEvents(page + 1);
                 }
-                // Si tu veux précharger 1 slide avant la fin:
-                // if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 2) { ... }
               }}
             />
 
@@ -348,7 +331,6 @@ const handlePressOut = () => {
               ))}
             </View>
 
-            {/* Loader sous les dots pendant le fetch */}
             {isFetchingMore && (
               <View style={{ paddingVertical: 12, alignItems: "center" }}>
                 <ActivityIndicator />
@@ -356,51 +338,45 @@ const handlePressOut = () => {
             )}
           </View>
         )}
-
-        {/* --- Loader supplémentaire (si besoin) --- */}
-        {isFetchingMore && (
-          <View style={{ paddingVertical: 16 }}>
-            <ActivityIndicator />
-          </View>
-        )}
       </ScrollView>
+
       {/* --- Bottom Navigation --- */}
       <BottomNavigation />
-      <View
-    style={{
-      position: "absolute",
-      bottom: 80, // au-dessus de la bottom nav
-      right: 20,
-      shadowColor: "#6366f1",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.4,
-      shadowRadius: 8,
-      elevation: 8,
-    }}
-  >
-    <Pressable
-      onPress={() => router.push("/(drawer)/create")}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-    >
-      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-        <LinearGradient
-          colors={["#2563eb", "#4f46e5"]} // from-blue-600 to-indigo-600
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 32,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+
+      {/* --- Create button --- */}
+      <View style={{
+        position: "absolute",
+        bottom: 80,
+        right: 20,
+        shadowColor: "#6366f1",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 8,
+      }}>
+        <Pressable
+          onPress={() => router.push("/(drawer)/create")}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
         >
-          <Plus color="#fff" size={32} />
-        </LinearGradient>
-      </Animated.View>
-    </Pressable>
-  </View>
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <LinearGradient
+              colors={["#2563eb", "#4f46e5"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 32,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Plus color="#fff" size={32} />
+            </LinearGradient>
+          </Animated.View>
+        </Pressable>
+      </View>
     </>
   );
 }

@@ -2,44 +2,36 @@
   "common": {
     "back": "Retour",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "delete": "Supprimer"
   },
   "nav": {
     "home": "Accueil",
     "profile": "Profil",
     "messages": "Messages"
   },
-  "home": {
-    "hello": "Salut {{name}} 👋",
-    "nearby": "Voici ce qui se passe près de toi",
-    "searching": "Recherche d’événements…",
-    "foundCount": "{{count}} événement(s) trouvé(s)",
-    "refreshLocation": "Actualiser ma position",
-    "filters": {
-      "allTypes": "Tous les types"
-    }
-  },
   "event": {
-    "participants_one": "{{count}} participant",
-    "participants_other": "{{count}} participant(s)",
+    "participants": "{{count}} participant",
+    "participants_plural": "{{count}} participants",
     "type": "Type",
     "date": "Date",
     "at": "à",
     "join": "Rejoindre l’événement",
     "leave": "Quitter l’événement",
     "goToChat": "Accéder au chat",
-    "delete": "Supprimer",
-    "confirmDelete": "Voulez-vous vraiment supprimer cet événement ?",
-    "notFound": "Aucun événement trouvé",
-    "loading": "Chargement…"
+    "delete": "Supprimer"
   },
-  "createEvent": {
-    "types": {
-      "concert": "Concert",
-      "spectacle": "Spectacle",
-      "soiree_a_theme": "Soirée à thème",
-      "expo": "Exposition",
-      "autre": "Autre"
+  "eventDetails": {
+    "errorLoad": "Impossible de charger l’événement.",
+    "errorJoin": "Impossible de rejoindre l’événement.",
+    "errorLeave": "Impossible de quitter l’événement.",
+    "errorDelete": "Impossible de supprimer l’événement.",
+    "successDelete": "Événement supprimé.",
+    "notFound": "Aucun événement trouvé",
+    "toast": {
+      "joined": "Tu as rejoint l’événement",
+      "left": "Tu as quitté l’événement",
+      "deleted": "Événement supprimé avec succès"
     }
   },
   "profile": {
@@ -49,6 +41,23 @@
     "noCreated": "Aucun événement créé.",
     "noJoined": "Tu ne participes à aucun événement."
   },
+  "updateProfile": {
+    "title": "Mon profil",
+    "fields": {
+      "username": "Nom d'utilisateur",
+      "bioLabel": "Bio",
+      "bio": "Quelques mots sur toi",
+      "avatarUrl": "URL de l'avatar (optionnel)"
+    },
+    "status": {
+      "submit": "Mettre à jour",
+      "loading": "Mise à jour..."
+    },
+    "toast": {
+      "success": "Profil mis à jour",
+      "error": "Mise à jour impossible"
+    }
+  },
   "editEvent": {
     "title": "Modifier l’événement",
     "name": "Nom",
@@ -56,6 +65,36 @@
     "type": "Type",
     "location": "Lieu",
     "futureError": "La date/heure doit être dans le futur.",
-    "save": "Enregistrer les modifications"
+    "save": "Enregistrer les modifications",
+    "loadError": "Impossible de charger l’événement.",
+    "updateError": "Impossible de mettre à jour l’événement.",
+    "toast": {
+      "updated": "Événement mis à jour avec succès"
+    }
+  },
+  "home": {
+    "hello": "Salut {{name}} 👋",
+    "nearby": "Événements près de vous",
+    "searching": "Recherche en cours...",
+    "foundCount": "{{count}} événement(s) trouvé(s)",
+    "filters": {
+      "allTypes": "Tous les types"
+    },
+    "refreshLocation": "Actualiser la position",
+    "meMarker": "Moi"
+  },
+  "createEvent": {
+    "types": {
+      "concert": "Concert",
+      "spectacle": "Spectacle",
+      "soiree_a_theme": "Soirée à thème",
+      "expo": "Exposition",
+      "festival": "Festival",
+      "autre": "Autre"
+    },
+    "toast": {
+      "created": "Événement créé avec succès",
+      "error": "Impossible de créer l’événement"
+    }
   }
 }
