@@ -3,7 +3,8 @@
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "pastEvent": "Past event",
   },
   "nav": {
     "home": "Home",
@@ -41,6 +42,16 @@
     "noCreated": "No created events.",
     "noJoined": "You are not participating in any events."
   },
+  "userProfile": {
+    "title": "Profile",
+    "loading": "Loading…",
+    "notFound": "User not found",
+    "toast": { "fetchUserError": "Unable to load user" },
+    "upcomingEvents": "Upcoming events",
+    "pastEvents": "Recent past events",
+    "noUpcoming": "No upcoming events.",
+    "noPast": "No recent events."
+  },
   "updateProfile": {
     "title": "My profile",
     "fields": {
@@ -57,6 +68,20 @@
       "success": "Profile updated",
       "error": "Profile update failed"
     }
+  },
+  "chat": {
+    "inputPlaceholder": "Type a message…",
+    "send": "Send",
+    "unknown": "Unknown",
+    "errors": {
+      "fetch": "Failed to load conversation"
+    }
+  },
+  "chatRooms": {
+    "title": "My chat rooms",
+    "loading": "Loading…",
+    "noRooms": "No rooms yet.",
+    "toast": { "fetchError": "Failed to load rooms" }
   },
   "editEvent": {
     "title": "Edit event",

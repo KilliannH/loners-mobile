@@ -1,3 +1,5 @@
+import { preloadUnreadCounts } from "@/services/notificationSocket";
+import socket from "@/services/socket";
 import * as SecureStore from "expo-secure-store";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import api, { clearTokens, setTokens } from "../services/api";
@@ -64,13 +66,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
+    preloadUnreadCounts();
     const { data } = await api.post("/auth/login", { email, password });
     await setTokens(data.token, data.refreshToken);
     await SecureStore.setItemAsync("user", JSON.stringify(data.user));
     setUser(data.user);
+    await socket.connect();
+    await socket.identify(data.user._id);
   };
 
   const loginWithGoogle = async (googleUser: User, token: string, refreshToken?: string) => {
+    preloadUnreadCounts();
     await setTokens(token, refreshToken);
     await SecureStore.setItemAsync("user", JSON.stringify(googleUser));
     setUser(googleUser);
