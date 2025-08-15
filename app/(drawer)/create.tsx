@@ -110,7 +110,7 @@ export default function CreateEventScreen() {
 
                 {/* Description */}
                 <TextInput
-                    placeholder="Description (optionnel)"
+                    placeholder="Description"
                     value={description}
                     onChangeText={setDescription}
                     multiline
