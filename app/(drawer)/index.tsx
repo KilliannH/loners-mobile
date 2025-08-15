@@ -1,14 +1,17 @@
 import api from "@/services/api";
 import { EventItem } from "@/types/types";
 import { Picker } from "@react-native-picker/picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { usePathname, useRouter } from "expo-router";
-import { Home, MessageSquare, User } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Home, MapPin, MessageSquare, Plus, User } from "lucide-react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Dimensions,
   FlatList,
   Image,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -30,7 +33,7 @@ const useLiveLocationMock = () => {
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const pageSize = 30;
-
+const availableTypes = ["all", "concert", "spectacle", "soiree_a_theme", "expo", "autre"];
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -48,9 +51,9 @@ export default function HomeScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [typeFilter, setTypeFilter] = useState<"all" | string>("all");
-  const [availableTypes, setAvailableTypes] = useState<string[]>(["all"]);
 
   const getIconColor = (path: string) => (pathname === path ? "#000" : "#6b7280");
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const groupEvents = useCallback((list: EventItem[], perGroup = 3) => {
     const grouped: EventItem[][] = [];
@@ -123,16 +126,28 @@ export default function HomeScreen() {
     if (position) fetchEvents(0);
   }, [position, typeFilter, fetchEvents]);
 
-  useEffect(() => {
-    const unique = Array.from(
-      new Set(
-        (events ?? [])
-          .map(e => e?.type)
-          .filter(Boolean)
-      )
-    ) as string[];
-    setAvailableTypes(["all", ...unique]);
-  }, [events]);
+  const handlePressIn = () => {
+  Animated.spring(scaleAnim, {
+    toValue: 0.95, // rétrécit un peu au clic
+    useNativeDriver: true,
+  }).start();
+};
+
+const handlePressOut = () => {
+  Animated.spring(scaleAnim, {
+    toValue: 1.05, // petit zoom
+    friction: 3,
+    tension: 40,
+    useNativeDriver: true,
+  }).start(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1, // retour à normal
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  });
+};
 
   return (
     <>
@@ -168,7 +183,7 @@ export default function HomeScreen() {
                   title="Moi"
                   pinColor="#3b82f6"
                 />
-                {events.map((ev) => (
+                {(groupedEvents[activeIndex] ?? []).map((ev) => (
                   <Marker
                     key={ev._id}
                     coordinate={{
@@ -186,7 +201,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 16 }}>
             <Image
               source={
                 user?.avatarUrl
@@ -195,7 +210,7 @@ export default function HomeScreen() {
               }
               style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
             />
-            <View style={{ flex: 1 }}>
+            <View style={{ alignItems: "center" }}>
               <Text style={{ fontSize: 18, fontWeight: "700" }}>
                 Salut {user?.username} 👋
               </Text>
@@ -216,31 +231,64 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* --- Filters --- */}
-        <View style={{ marginTop: 12, paddingHorizontal: 16 }}>
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: "#e5e7eb",
-              borderRadius: 10,
-              backgroundColor: "#fff",
-              overflow: "hidden",
-            }}
-          >
-            <Picker
-              selectedValue={typeFilter}
-              onValueChange={(value) => setTypeFilter(value)}
-              mode="dropdown"
+        {/* --- Filters + Refresh position row --- */}
+        <View
+          style={{
+            marginTop: 12,
+            paddingHorizontal: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12, // fonctionne RN 0.74+
+          }}
+        >
+          {/* Picker compact (≈ 50% width) */}
+          <View style={{ flexBasis: "50%", flexGrow: 0 }}>
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: "#e5e7eb",
+                borderRadius: 10,
+                backgroundColor: "#fff",
+                overflow: "hidden",
+                height: 40, // hauteur compacte
+                justifyContent: "center",
+              }}
             >
-              {availableTypes.map(t => (
-                <Picker.Item
-                  key={t}
-                  label={t === "all" ? "Tous les types" : t}
-                  value={t}
-                />
-              ))}
-            </Picker>
+              <Picker
+                selectedValue={typeFilter}
+                onValueChange={(value) => setTypeFilter(value)}
+                mode="dropdown"
+                dropdownIconColor="#6b7280"
+                style={{
+                  height: 40,          // compacte (Android)
+                  paddingVertical: 0,  // compacte (iOS)
+                }}
+                itemStyle={{
+                  fontSize: 13,        // compacte (iOS)
+                }}
+              >
+                {availableTypes.map((t) => (
+                  <Picker.Item
+                    key={t}
+                    label={t === "all" ? "Tous les types" : t}
+                    value={t}
+                  />
+                ))}
+              </Picker>
+            </View>
           </View>
+
+          {/* Bouton texte bleu */}
+          <TouchableOpacity
+            onPress={() => position && fetchEvents(0)}
+            style={{ flexDirection: "row", alignItems: "center" }}
+          >
+            <MapPin size={16} color="#3b82f6" style={{ marginRight: 4 }} />
+            <Text style={{ color: "#3b82f6", fontSize: 14, fontWeight: "500" }}>
+              Actualiser ma position
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* --- Carousel horizontal (3 cards/slide) --- */}
@@ -339,6 +387,41 @@ export default function HomeScreen() {
           <MessageSquare size={24} color={getIconColor("/messages")} />
         </TouchableOpacity>
       </View>
+      <View
+    style={{
+      position: "absolute",
+      bottom: 80, // au-dessus de la bottom nav
+      right: 20,
+      shadowColor: "#6366f1",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 8,
+    }}
+  >
+    <Pressable
+      onPress={() => console.log("➕ Bouton appuyé")}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <LinearGradient
+          colors={["#2563eb", "#4f46e5"]} // from-blue-600 to-indigo-600
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Plus color="#fff" size={32} />
+        </LinearGradient>
+      </Animated.View>
+    </Pressable>
+  </View>
     </>
   );
 }
