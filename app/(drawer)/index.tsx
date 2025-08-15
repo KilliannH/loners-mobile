@@ -1,5 +1,8 @@
 import api from "@/services/api";
 import { EventItem } from "@/types/types";
+import { Picker } from "@react-native-picker/picker";
+import { usePathname, useRouter } from "expo-router";
+import { Home, MessageSquare, User } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -28,8 +31,12 @@ const useLiveLocationMock = () => {
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const pageSize = 30;
 
+
 export default function HomeScreen() {
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const position = useLiveLocationMock();
   const [region, setRegion] = useState<Region | null>(null);
 
@@ -41,6 +48,9 @@ export default function HomeScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [typeFilter, setTypeFilter] = useState<"all" | string>("all");
+  const [availableTypes, setAvailableTypes] = useState<string[]>(["all"]);
+
+  const getIconColor = (path: string) => (pathname === path ? "#000" : "#6b7280");
 
   const groupEvents = useCallback((list: EventItem[], perGroup = 3) => {
     const grouped: EventItem[][] = [];
@@ -113,158 +123,223 @@ export default function HomeScreen() {
     if (position) fetchEvents(0);
   }, [position, typeFilter, fetchEvents]);
 
+  useEffect(() => {
+    const unique = Array.from(
+      new Set(
+        (events ?? [])
+          .map(e => e?.type)
+          .filter(Boolean)
+      )
+    ) as string[];
+    setAvailableTypes(["all", ...unique]);
+  }, [events]);
+
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: "#f3f4f6" }}
-      contentContainerStyle={{ paddingBottom: 32 }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* --- Map + Greeting + Count --- */}
-      <View style={{ padding: 16, paddingBottom: 8 }}>
-        <View
-          style={{
-            borderRadius: 16,
-            overflow: "hidden",
-            backgroundColor: "#e5e7eb",
-            height: 200,
-          }}
-        >
-          {region ? (
-            <MapView
-              style={{ flex: 1 }}
-              initialRegion={region}
-              provider="google"
-              scrollEnabled={false}
-              zoomEnabled={false}
-              onRegionChangeComplete={setRegion}
-            >
-              <Marker
-                coordinate={{
-                  latitude: region.latitude,
-                  longitude: region.longitude,
-                }}
-                title="Moi"
-                pinColor="#3b82f6"
-              />
-              {events.map((ev) => (
+    <>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#f3f4f6" }}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* --- Map + Greeting + Count --- */}
+        <View style={{ padding: 16, paddingBottom: 8 }}>
+          <View
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+              backgroundColor: "#e5e7eb",
+              height: 200,
+            }}
+          >
+            {region ? (
+              <MapView
+                style={{ flex: 1 }}
+                initialRegion={region}
+                provider="google"
+                scrollEnabled={false}
+                zoomEnabled={false}
+                onRegionChangeComplete={setRegion}
+              >
                 <Marker
-                  key={ev._id}
                   coordinate={{
-                    latitude: ev.location.coordinates.coordinates[1],
-                    longitude: ev.location.coordinates.coordinates[0],
+                    latitude: region.latitude,
+                    longitude: region.longitude,
                   }}
-                  title={ev.name}
+                  title="Moi"
+                  pinColor="#3b82f6"
                 />
-              ))}
-            </MapView>
-          ) : (
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-              <ActivityIndicator />
-            </View>
-          )}
-        </View>
-
-        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
-          <Image
-            source={
-              user?.avatarUrl
-                ? { uri: user.avatarUrl }
-                : require("../../assets/avatar_fallback.png")
-            }
-            style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
-          />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 18, fontWeight: "700" }}>
-              Salut {user?.username} 👋
-            </Text>
-            <Text style={{ color: "#6b7280" }}>
-              Voici ce qui se passe près de toi
-            </Text>
-          </View>
-          <TouchableOpacity onPress={() => position && fetchEvents(0)} style={{ padding: 8 }}>
-            <Text style={{ color: "#3b82f6" }}>Actualiser</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ alignItems: "center", marginTop: 12 }}>
-          {loading ? (
-            <Text style={{ color: "#6b7280" }}>Recherche d’événements…</Text>
-          ) : (
-            <Text style={{ color: "#6b7280" }}>
-              {totalEvents} événement(s) trouvé(s)
-            </Text>
-          )}
-        </View>
-      </View>
-
-      {/* --- Carousel horizontal (3 cards/slide) --- */}
-      {groupedEvents.length > 0 && (
-        <View style={{ marginTop: 8, paddingBottom: 16 }}>
-          <FlatList
-            data={groupedEvents}
-            keyExtractor={(_, index) => `group-${index}`}
-            horizontal
-            pagingEnabled
-            decelerationRate="fast"
-            snapToAlignment="start"
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 24 }}
-            renderItem={({ item, index }) => (
-              <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 16, paddingBottom: 24 }}>
-                {item.map((ev, idx) => (
-                  <EventCard
+                {events.map((ev) => (
+                  <Marker
                     key={ev._id}
-                    item={ev}
-                    isLast={index === groupedEvents.length - 1 && idx === item.length - 1}
+                    coordinate={{
+                      latitude: ev.location.coordinates.coordinates[1],
+                      longitude: ev.location.coordinates.coordinates[0],
+                    }}
+                    title={ev.name}
                   />
                 ))}
+              </MapView>
+            ) : (
+              <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                <ActivityIndicator />
               </View>
             )}
-            onMomentumScrollEnd={(e) => {
-              const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-              setActiveIndex(idx);
-
-              // 👉 pagination fiable: quand on atteint l'avant-dernier/dernier slide
-              if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 1) {
-                fetchEvents(page + 1);
-              }
-              // Si tu veux précharger 1 slide avant la fin:
-              // if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 2) { ... }
-            }}
-          />
-
-          {/* Dots */}
-          <View style={{ flexDirection: "row", justifyContent: "center" }}>
-            {groupedEvents.map((_, idx) => (
-              <View
-                key={idx}
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  marginHorizontal: 4,
-                  backgroundColor: idx === activeIndex ? "#3b82f6" : "#d1d5db",
-                }}
-              />
-            ))}
           </View>
 
-          {/* Loader sous les dots pendant le fetch */}
-          {isFetchingMore && (
-            <View style={{ paddingVertical: 12, alignItems: "center" }}>
-              <ActivityIndicator />
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 }}>
+            <Image
+              source={
+                user?.avatarUrl
+                  ? { uri: user.avatarUrl }
+                  : require("../../assets/avatar_fallback.png")
+              }
+              style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: "700" }}>
+                Salut {user?.username} 👋
+              </Text>
+              <Text style={{ color: "#6b7280" }}>
+                Voici ce qui se passe près de toi
+              </Text>
             </View>
-          )}
-        </View>
-      )}
+          </View>
 
-      {/* --- Loader supplémentaire (si besoin) --- */}
-      {isFetchingMore && (
-        <View style={{ paddingVertical: 16 }}>
-          <ActivityIndicator />
+          <View style={{ alignItems: "center", marginTop: 12 }}>
+            {loading ? (
+              <Text style={{ color: "#6b7280" }}>Recherche d’événements…</Text>
+            ) : (
+              <Text style={{ color: "#6b7280" }}>
+                {totalEvents} événement(s) trouvé(s)
+              </Text>
+            )}
+          </View>
         </View>
-      )}
-    </ScrollView>
+
+        {/* --- Filters --- */}
+        <View style={{ marginTop: 12, paddingHorizontal: 16 }}>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 10,
+              backgroundColor: "#fff",
+              overflow: "hidden",
+            }}
+          >
+            <Picker
+              selectedValue={typeFilter}
+              onValueChange={(value) => setTypeFilter(value)}
+              mode="dropdown"
+            >
+              {availableTypes.map(t => (
+                <Picker.Item
+                  key={t}
+                  label={t === "all" ? "Tous les types" : t}
+                  value={t}
+                />
+              ))}
+            </Picker>
+          </View>
+        </View>
+
+        {/* --- Carousel horizontal (3 cards/slide) --- */}
+        {groupedEvents.length > 0 && (
+          <View style={{ marginTop: 8, paddingBottom: 16 }}>
+            <FlatList
+              data={groupedEvents}
+              keyExtractor={(_, index) => `group-${index}`}
+              horizontal
+              pagingEnabled
+              decelerationRate="fast"
+              snapToAlignment="start"
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 24 }}
+              renderItem={({ item, index }) => (
+                <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 16, paddingBottom: 24 }}>
+                  {item.map((ev, idx) => (
+                    <EventCard
+                      key={ev._id}
+                      item={ev}
+                      isLast={index === groupedEvents.length - 1 && idx === item.length - 1}
+                    />
+                  ))}
+                </View>
+              )}
+              onMomentumScrollEnd={(e) => {
+                const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                setActiveIndex(idx);
+
+                // 👉 pagination fiable: quand on atteint l'avant-dernier/dernier slide
+                if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 1) {
+                  fetchEvents(page + 1);
+                }
+                // Si tu veux précharger 1 slide avant la fin:
+                // if (!isFetchingMore && hasMore && idx >= groupedEvents.length - 2) { ... }
+              }}
+            />
+
+            {/* Dots */}
+            <View style={{ flexDirection: "row", justifyContent: "center" }}>
+              {groupedEvents.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    marginHorizontal: 4,
+                    backgroundColor: idx === activeIndex ? "#3b82f6" : "#d1d5db",
+                  }}
+                />
+              ))}
+            </View>
+
+            {/* Loader sous les dots pendant le fetch */}
+            {isFetchingMore && (
+              <View style={{ paddingVertical: 12, alignItems: "center" }}>
+                <ActivityIndicator />
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* --- Loader supplémentaire (si besoin) --- */}
+        {isFetchingMore && (
+          <View style={{ paddingVertical: 16 }}>
+            <ActivityIndicator />
+          </View>
+        )}
+      </ScrollView>
+      {/* --- Bottom Navigation --- */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          alignItems: "center",
+          paddingVertical: 10,
+          backgroundColor: "#fff",
+          borderTopWidth: 1,
+          borderTopColor: "#e5e7eb",
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <TouchableOpacity onPress={() => router.push("/")} style={{ alignItems: "center" }}>
+          <Home size={24} color={getIconColor("/")} />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/profile")} style={{ alignItems: "center" }}>
+          <User size={24} color={getIconColor("/profile")} />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push("/messages")} style={{ alignItems: "center" }}>
+          <MessageSquare size={24} color={getIconColor("/messages")} />
+        </TouchableOpacity>
+      </View>
+    </>
   );
 }
 
