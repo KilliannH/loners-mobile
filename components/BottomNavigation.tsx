@@ -64,13 +64,13 @@ export default function BottomNavigation() {
                 position: "absolute",
                 top: -6,
                 right: -10,
-                backgroundColor: "red",
-                borderRadius: 10,
-                paddingHorizontal: 5,
+                backgroundColor: "#ef4444", // même rouge que dans tes listes
+                borderRadius: 9999,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
                 minWidth: 16,
-                height: 16,
-                justifyContent: "center",
                 alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <Text

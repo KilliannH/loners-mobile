@@ -39,6 +39,15 @@ class SocketClient {
     this.s.emit("identify", userId);
   };
 
+  join = async (roomId: string) => {
+    await this.connect();
+    this.s.emit("join", roomId);
+  };
+
+  leave = (roomId: string) => {
+    this.s.emit("leave", roomId);
+  };
+
   on = (event: string, handler: (...args: any[]) => void) => {
     this.s.on(event, handler);
   };
@@ -53,6 +62,7 @@ class SocketClient {
   };
 }
 
+// Logs debug
 raw.on("connect", () => {
   console.log("✅ [socket] connecté au serveur", raw.id);
 });

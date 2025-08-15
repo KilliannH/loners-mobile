@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { MessageSquare } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,9 +10,11 @@ import {
   View,
 } from "react-native";
 
+import BottomNavigation from "@/components/BottomNavigation";
 import api from "@/services/api";
+import { bindNotificationSocket } from "@/services/notificationSocket";
+import { useNotificationStore } from "@/store/notificationStore";
 import { toastError } from "@/utils/toast";
-import { useNotificationStore } from "../../store/notificationStore";
 
 type RoomItem = {
   _id: string;
@@ -54,6 +56,16 @@ export default function ChatRoomsScreen() {
       setLoading(false);
     }
   }, [setUnreadByRoom]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRoomsAndUnread();
+      const unbind = bindNotificationSocket(); // écoute des notifs en temps réel
+      return () => {
+        if (unbind) unbind();
+      };
+    }, [fetchRoomsAndUnread])
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: RoomItem }) => {
@@ -106,6 +118,7 @@ export default function ChatRoomsScreen() {
   }
 
   return (
+    <>
     <View style={{ flex: 1, padding: 16, backgroundColor: "#f3f4f6" }}>
       <FlatList
         data={rooms}
@@ -118,5 +131,7 @@ export default function ChatRoomsScreen() {
         }
       />
     </View>
+    <BottomNavigation />
+    </>
   );
 }

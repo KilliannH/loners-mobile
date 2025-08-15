@@ -1,4 +1,4 @@
-import { bindNotificationSocket } from "@/services/notificationSocket";
+import { bindNotificationSocket, preloadUnreadCounts } from "@/services/notificationSocket";
 import socket from "@/services/socket";
 import { Stack } from "expo-router";
 import React, { useEffect, useRef } from "react";
@@ -9,17 +9,17 @@ import { AuthContext, AuthProvider } from "../contexts/AuthProvider";
 import "../i18n";
 import i18n from "../i18n";
 
-// ⚡️ Lit le contexte APRÈS AuthProvider et gère socket + notifs
 function AuthSocketManager() {
   const { user, loading } = React.useContext(AuthContext);
   const boundRef = useRef(false);
   const identifiedRef = useRef<string | null>(null);
 
+  // Log pour debug
   useEffect(() => {
     console.log("🧪 AuthSocketManager | loading:", loading, "| user:", user);
   }, [loading, user]);
 
-  // Connect + identify quand l'user est prêt
+  // Connexion socket
   useEffect(() => {
     if (loading || !user?._id) return;
 
@@ -32,10 +32,13 @@ function AuthSocketManager() {
       await socket.identify(user._id);
       identifiedRef.current = user._id;
       console.log("🪪 [socket] identify envoyé", user._id);
+
+      // Précharge les non-lus au boot
+      preloadUnreadCounts();
     })();
   }, [user?._id, loading]);
 
-  // Bind des notifications une fois prêt
+  // Bind notifications
   useEffect(() => {
     if (!boundRef.current && !loading && user?._id) {
       console.log("🔌 [notif] Binding des notifications socket...");
@@ -45,7 +48,7 @@ function AuthSocketManager() {
     }
   }, [loading, user?._id]);
 
-  return null; // logique uniquement, aucun rendu
+  return null;
 }
 
 export default function RootLayout() {

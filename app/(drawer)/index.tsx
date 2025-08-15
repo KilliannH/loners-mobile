@@ -170,7 +170,7 @@ export default function HomeScreen() {
                 initialRegion={region}
                 provider="google"
                 scrollEnabled={false}
-                zoomEnabled={false}
+                zoomEnabled={true}
                 onRegionChangeComplete={setRegion}
               >
                 <Marker
