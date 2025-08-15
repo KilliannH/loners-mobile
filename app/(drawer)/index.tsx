@@ -400,7 +400,7 @@ const handlePressOut = () => {
     }}
   >
     <Pressable
-      onPress={() => console.log("➕ Bouton appuyé")}
+      onPress={() => router.push("/(drawer)/create")}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
     >
