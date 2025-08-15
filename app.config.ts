@@ -44,6 +44,7 @@ const config: ExpoConfig = {
   },
   experiments: { typedRoutes: true },
   extra: {
+    googleApiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
     eas: { projectId: "0d77a0ae-a23e-4722-b0b2-f48d3f2d5779" }
   },
   owner: "killiann"

@@ -1,9 +1,10 @@
+import BottomNavigation from "@/components/BottomNavigation";
 import api from "@/services/api";
 import { EventItem } from "@/types/types";
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { usePathname, useRouter } from "expo-router";
-import { Home, MapPin, MessageSquare, Plus, User } from "lucide-react-native";
+import { MapPin, Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -360,33 +361,7 @@ const handlePressOut = () => {
         )}
       </ScrollView>
       {/* --- Bottom Navigation --- */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          alignItems: "center",
-          paddingVertical: 10,
-          backgroundColor: "#fff",
-          borderTopWidth: 1,
-          borderTopColor: "#e5e7eb",
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <TouchableOpacity onPress={() => router.push("/")} style={{ alignItems: "center" }}>
-          <Home size={24} color={getIconColor("/")} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push("/profile")} style={{ alignItems: "center" }}>
-          <User size={24} color={getIconColor("/profile")} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => router.push("/messages")} style={{ alignItems: "center" }}>
-          <MessageSquare size={24} color={getIconColor("/messages")} />
-        </TouchableOpacity>
-      </View>
+      <BottomNavigation />
       <View
     style={{
       position: "absolute",
@@ -433,56 +408,63 @@ function EventCard({
   item: EventItem;
   isLast?: boolean;
 }) {
+  const router = useRouter();
+
   return (
-    <View
-      style={{
-        backgroundColor: "white",
-        padding: 14,
-        borderRadius: 12,
-        marginTop: 12,
-        marginBottom: isLast ? 24 : 12, // espace en bas si c’est la dernière
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-      }}
+    <TouchableOpacity
+      onPress={() => router.push(`/event_details/${item._id}`)}
+      activeOpacity={0.8}
     >
-      <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
-        {item.name}
-      </Text>
-      {!!item.description && (
-        <Text numberOfLines={2} style={{ color: "#6b7280", marginBottom: 10 }}>
-          {item.description}
-        </Text>
-      )}
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
+          backgroundColor: "white",
+          padding: 14,
+          borderRadius: 12,
+          marginTop: 12,
+          marginBottom: isLast ? 24 : 12,
+          borderWidth: 1,
+          borderColor: "#e5e7eb",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 1,
         }}
       >
-        <Text
-          style={{
-            backgroundColor: "#eef2ff",
-            color: "#4f46e5",
-            paddingVertical: 4,
-            paddingHorizontal: 10,
-            borderRadius: 999,
-            fontSize: 12,
-          }}
-        >
-          {item.type ?? "Événement"}
+        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
+          {item.name}
         </Text>
-        {!!item.attendees && (
-          <Text style={{ color: "#6b7280", fontSize: 12 }}>
-            {item.attendees.length} participant(s)
+        {!!item.description && (
+          <Text numberOfLines={2} style={{ color: "#6b7280", marginBottom: 10 }}>
+            {item.description}
           </Text>
         )}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Text
+            style={{
+              backgroundColor: "#eef2ff",
+              color: "#4f46e5",
+              paddingVertical: 4,
+              paddingHorizontal: 10,
+              borderRadius: 999,
+              fontSize: 12,
+            }}
+          >
+            {item.type ?? "Événement"}
+          </Text>
+          {!!item.attendees && (
+            <Text style={{ color: "#6b7280", fontSize: 12 }}>
+              {item.attendees.length} participant(s)
+            </Text>
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
