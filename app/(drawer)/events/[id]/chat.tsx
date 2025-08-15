@@ -15,10 +15,8 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/services/api";
+import { useRoomStore } from "@/store/roomStore";
 import { toastError } from "@/utils/toast";
-// si tu as un client socket natif, décommente :
-import { markRoomAsRead } from "@/services/notificationSocket";
-import socket from "../../../../services/socket";
 
 type ChatMessage = {
     _id?: string;
@@ -33,6 +31,7 @@ export default function ChatRoomScreen() {
     const { id: eventIdParam } = useLocalSearchParams<{ id: string }>();
     const eventId = Array.isArray(eventIdParam) ? eventIdParam[0] : eventIdParam;
     const { user } = useAuth();
+    const setActiveRoom = useRoomStore((s) => s.setActiveRoom);
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [loading, setLoading] = useState(true);
@@ -65,11 +64,10 @@ export default function ChatRoomScreen() {
         }
     }, [eventId]);
 
-useEffect(() => {
-  if (eventId) {
-    markRoomAsRead(String(eventId));
-  }
-}, [eventId]);
+    useEffect(() => {
+        setActiveRoom(eventId);
+        return () => setActiveRoom(null);
+    }, [eventId]);
 
     useEffect(() => {
         fetchMessages();

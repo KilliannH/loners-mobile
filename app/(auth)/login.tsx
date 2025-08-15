@@ -1,11 +1,11 @@
 import GoogleButton from "@/components/GoogleButton";
+import { useAuth } from "@/hooks/useAuth";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../../contexts/AuthContext";
-import { useGoogleAuth } from "../../hooks/useGoogleAuth";
 import api from "../../services/api";
 
 export default function Login() {

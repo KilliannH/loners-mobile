@@ -1,46 +1,39 @@
-import api from "@/services/api";
-import socket from "@/services/socket";
-import { useNotificationStore } from "../store/notificationStore";
+import { useNotificationStore } from "@/store/notificationStore";
+import { useRoomStore } from "@/store/roomStore";
+import Toast from "react-native-toast-message";
+import socket from "./socket";
 
 let bound = false;
 
-/** Appelle ça au boot (RootLayout) pour remplir les non-lus depuis l’API */
-export async function preloadUnreadCounts() {
-  try {
-    const res = await api.get<{ event: string }[]>("/notifications/unread");
-    const map: Record<string, number> = {};
-    (res.data || []).forEach((n) => {
-      map[n.event] = (map[n.event] || 0) + 1;
-    });
-    useNotificationStore.getState().setUnreadByRoom(map);
-  } catch (e) {
-    // silencieux
-  }
-}
-
-/** Abonne le socket à message:notification -> incrémente le compteur */
 export function bindNotificationSocket() {
   if (bound) return () => {};
   const { increment } = useNotificationStore.getState();
 
-  const handler = ({ eventId }: { eventId: string }) => {
-    increment(eventId, 1);
+  const handler = ({
+    roomId,
+    text,
+  }: {
+    roomId: string;
+    text?: string;
+  }) => {
+    const activeRoomId = useRoomStore.getState().activeRoomId;
+
+    if (activeRoomId !== roomId) {
+      increment(roomId);
+
+      Toast.show({
+        type: "info",
+        text1: "Nouveau message",
+        text2: text || "Vous avez un nouveau message.",
+      });
+    }
   };
 
   socket.on("message:notification", handler);
   bound = true;
 
-  // retourne un unbind pour cleanup si besoin
   return () => {
     socket.off("message:notification", handler);
     bound = false;
   };
-}
-
-/** Marque une room comme lue côté API + store local */
-export async function markRoomAsRead(eventId: string) {
-  try {
-    await api.post(`/notifications/mark-read/${eventId}`);
-  } catch {}
-  useNotificationStore.getState().markAsRead(eventId);
 }

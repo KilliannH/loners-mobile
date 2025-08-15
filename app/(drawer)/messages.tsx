@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { MessageSquare } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,6 @@ import {
 } from "react-native";
 
 import api from "@/services/api";
-import { bindNotificationSocket } from "@/services/notificationSocket";
 import { toastError } from "@/utils/toast";
 import { useNotificationStore } from "../../store/notificationStore";
 
@@ -55,16 +54,6 @@ export default function ChatRoomsScreen() {
       setLoading(false);
     }
   }, [setUnreadByRoom]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchRoomsAndUnread();
-      const unbind = bindNotificationSocket(); // écoute des notifs en temps réel
-      return () => {
-        if (unbind) unbind();
-      };
-    }, [fetchRoomsAndUnread])
-  );
 
   const renderItem = useCallback(
     ({ item }: { item: RoomItem }) => {

@@ -1,7 +1,5 @@
-import { preloadUnreadCounts } from "@/services/notificationSocket";
-import socket from "@/services/socket";
 import * as SecureStore from "expo-secure-store";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import api, { clearTokens, setTokens } from "../services/api";
 
 interface User {
@@ -47,18 +45,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Chargement initial
   useEffect(() => {
     (async () => {
+      console.log("🟡 Chargement initial AuthProvider...");
       const storedUser = await SecureStore.getItemAsync("user");
       const token = await SecureStore.getItemAsync("token");
+
+      console.log("🔐 token:", token);
+      console.log("🧍 storedUser:", storedUser);
 
       if (storedUser && token) {
         try {
           setUser(JSON.parse(storedUser));
+          console.log("📞 Requête GET /users/me...");
           const me = await api.get("/users/me");
+          console.log("✅ Réponse /me:", me.data);
           setUser(me.data);
           await SecureStore.setItemAsync("user", JSON.stringify(me.data));
         } catch (err) {
           console.log("⚠️ Impossible de récupérer /me :", err);
         }
+      } else {
+        console.log("❌ Aucun user/token trouvé en local.");
       }
 
       setLoading(false);
@@ -66,17 +72,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
-    preloadUnreadCounts();
     const { data } = await api.post("/auth/login", { email, password });
     await setTokens(data.token, data.refreshToken);
     await SecureStore.setItemAsync("user", JSON.stringify(data.user));
     setUser(data.user);
-    await socket.connect();
-    await socket.identify(data.user._id);
   };
 
   const loginWithGoogle = async (googleUser: User, token: string, refreshToken?: string) => {
-    preloadUnreadCounts();
     await setTokens(token, refreshToken);
     await SecureStore.setItemAsync("user", JSON.stringify(googleUser));
     setUser(googleUser);
@@ -95,12 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await SecureStore.deleteItemAsync("user");
     setUser(null);
   };
-
+  console.log("🧩 [AuthProvider] children type:", typeof children, children);
   return (
     <AuthContext.Provider value={{ user, loading, login, signup, logout, loginWithGoogle, setUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

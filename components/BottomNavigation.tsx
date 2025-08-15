@@ -1,7 +1,7 @@
 import { useNotificationStore } from "@/store/notificationStore";
 import { usePathname, useRouter } from "expo-router";
 import { Home, MessageSquare, User } from "lucide-react-native";
-import React, { useMemo } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,13 +12,11 @@ export default function BottomNavigation() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
-  const unreadByRoom = useNotificationStore((s) => s.unreadByRoom);
-  const totalUnread = useMemo(
-    () => Object.values(unreadByRoom || {}).reduce((sum, n) => sum + (n || 0), 0),
-    [unreadByRoom]
-  );
-
   const getIconColor = (path: string) => (pathname === path ? "#000" : "#6b7280");
+
+  // 🔴 Étape 1 : récupérer tous les non-lus
+  const unreadByRoom = useNotificationStore((s) => s.unreadByRoom);
+  const unreadTotal = Object.values(unreadByRoom).reduce((sum, count) => sum + count, 0);
 
   return (
     <View
@@ -59,23 +57,30 @@ export default function BottomNavigation() {
       >
         <View style={{ position: "relative" }}>
           <MessageSquare size={24} color={getIconColor("/messages")} />
-          {totalUnread > 0 && (
+
+          {unreadTotal > 0 && (
             <View
               style={{
                 position: "absolute",
                 top: -6,
                 right: -10,
+                backgroundColor: "red",
+                borderRadius: 10,
+                paddingHorizontal: 5,
                 minWidth: 16,
                 height: 16,
-                paddingHorizontal: 4,
-                backgroundColor: "#ef4444",
-                borderRadius: 8,
-                alignItems: "center",
                 justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
-                {totalUnread > 99 ? "99+" : totalUnread}
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 10,
+                  fontWeight: "bold",
+                }}
+              >
+                {unreadTotal > 99 ? "99+" : unreadTotal}
               </Text>
             </View>
           )}

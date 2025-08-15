@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Drawer } from "expo-router/drawer";
@@ -5,7 +6,6 @@ import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-
 import React, { useCallback } from "react";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "../../contexts/AuthContext";
 
 function CustomDrawerContent(props: any) {
   const router = useRouter();

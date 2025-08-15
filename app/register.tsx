@@ -1,8 +1,8 @@
+import { useAuth } from "@/hooks/useAuth";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../contexts/AuthContext";
 
 export default function Register() {
   const { signup } = useAuth();

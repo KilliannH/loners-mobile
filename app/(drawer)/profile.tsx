@@ -68,11 +68,6 @@ useFocusEffect(
   }, [refreshUser, fetchEvents, createdEvents.length, joinedEvents.length])
 );
 
-// ❌ supprime ceci (il causait un double fetch et un flash de loader)
-// useEffect(() => {
-//   fetchEvents({ showLoader: true });
-// }, [fetchEvents]);
-
 const noData = createdEvents.length === 0 && joinedEvents.length === 0;
 const showHeaderSpinner = loading && noData;
 
