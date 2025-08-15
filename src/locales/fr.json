@@ -1,0 +1,61 @@
+{
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  "nav": {
+    "home": "Accueil",
+    "profile": "Profil",
+    "messages": "Messages"
+  },
+  "home": {
+    "hello": "Salut {{name}} 👋",
+    "nearby": "Voici ce qui se passe près de toi",
+    "searching": "Recherche d’événements…",
+    "foundCount": "{{count}} événement(s) trouvé(s)",
+    "refreshLocation": "Actualiser ma position",
+    "filters": {
+      "allTypes": "Tous les types"
+    }
+  },
+  "event": {
+    "participants_one": "{{count}} participant",
+    "participants_other": "{{count}} participant(s)",
+    "type": "Type",
+    "date": "Date",
+    "at": "à",
+    "join": "Rejoindre l’événement",
+    "leave": "Quitter l’événement",
+    "goToChat": "Accéder au chat",
+    "delete": "Supprimer",
+    "confirmDelete": "Voulez-vous vraiment supprimer cet événement ?",
+    "notFound": "Aucun événement trouvé",
+    "loading": "Chargement…"
+  },
+  "createEvent": {
+    "types": {
+      "concert": "Concert",
+      "spectacle": "Spectacle",
+      "soiree_a_theme": "Soirée à thème",
+      "expo": "Exposition",
+      "autre": "Autre"
+    }
+  },
+  "profile": {
+    "edit": "Modifier mon profil",
+    "createdEvents": "Événements créés",
+    "joinedEvents": "Événements rejoints",
+    "noCreated": "Aucun événement créé.",
+    "noJoined": "Tu ne participes à aucun événement."
+  },
+  "editEvent": {
+    "title": "Modifier l’événement",
+    "name": "Nom",
+    "description": "Description",
+    "type": "Type",
+    "location": "Lieu",
+    "futureError": "La date/heure doit être dans le futur.",
+    "save": "Enregistrer les modifications"
+  }
+}

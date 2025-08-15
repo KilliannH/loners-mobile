@@ -1,10 +1,12 @@
 import { usePathname, useRouter } from "expo-router";
 import { Home, MessageSquare, User } from "lucide-react-native";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function BottomNavigation() {
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
@@ -24,15 +26,15 @@ export default function BottomNavigation() {
         borderTopColor: "#e5e7eb",
       }}
     >
-      <TouchableOpacity onPress={() => router.push("/")} style={{ alignItems: "center" }}>
+      <TouchableOpacity onPress={() => router.push("/")} style={{ alignItems: "center" }} accessibilityRole="button" accessibilityLabel={t("nav.home")}>
         <Home size={24} color={getIconColor("/")} />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/profile")} style={{ alignItems: "center" }}>
+      <TouchableOpacity onPress={() => router.push("/profile")} style={{ alignItems: "center" }} accessibilityRole="button" accessibilityLabel={t("nav.profile")}>
         <User size={24} color={getIconColor("/profile")} />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/messages")} style={{ alignItems: "center" }}>
+      <TouchableOpacity onPress={() => router.push("/messages")} style={{ alignItems: "center" }} accessibilityRole="button" accessibilityLabel={t("nav.messages")}>
         <MessageSquare size={24} color={getIconColor("/messages")} />
       </TouchableOpacity>
     </View>

@@ -1,11 +1,14 @@
 import BottomNavigation from "@/components/BottomNavigation";
+import EventCard from "@/components/EventCard";
 import api from "@/services/api";
 import { EventItem } from "@/types/types";
+import { availableTypes as baseTypes } from "@/utils/eventTypes";
 import { Picker } from "@react-native-picker/picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { usePathname, useRouter } from "expo-router";
 import { MapPin, Plus } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Animated,
@@ -21,6 +24,8 @@ import {
 import MapView, { Marker, Region } from "react-native-maps";
 import { useAuth } from "../../hooks/useAuth";
 
+const availableTypes = ["all", ...baseTypes] as const;
+
 // Mock position
 const useLiveLocationMock = () => {
   const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
@@ -34,9 +39,9 @@ const useLiveLocationMock = () => {
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const pageSize = 30;
-const availableTypes = ["all", "concert", "spectacle", "soiree_a_theme", "expo", "autre"];
 
 export default function HomeScreen() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -53,7 +58,6 @@ export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [typeFilter, setTypeFilter] = useState<"all" | string>("all");
 
-  const getIconColor = (path: string) => (pathname === path ? "#000" : "#6b7280");
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const groupEvents = useCallback((list: EventItem[], perGroup = 3) => {
@@ -213,20 +217,20 @@ const handlePressOut = () => {
             />
             <View style={{ alignItems: "center" }}>
               <Text style={{ fontSize: 18, fontWeight: "700" }}>
-                Salut {user?.username} 👋
+                {t("home.hello", { name: user?.username ?? "" })}
               </Text>
               <Text style={{ color: "#6b7280" }}>
-                Voici ce qui se passe près de toi
+                {t("home.nearby")}
               </Text>
             </View>
           </View>
 
           <View style={{ alignItems: "center", marginTop: 12 }}>
             {loading ? (
-              <Text style={{ color: "#6b7280" }}>Recherche d’événements…</Text>
+              <Text style={{ color: "#6b7280" }}>{t("home.searching")}</Text>
             ) : (
               <Text style={{ color: "#6b7280" }}>
-                {totalEvents} événement(s) trouvé(s)
+                {totalEvents} {t("home.foundCount", { count: totalEvents })}
               </Text>
             )}
           </View>
@@ -240,7 +244,7 @@ const handlePressOut = () => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 12, // fonctionne RN 0.74+
+            gap: 12,
           }}
         >
           {/* Picker compact (≈ 50% width) */}
@@ -269,11 +273,11 @@ const handlePressOut = () => {
                   fontSize: 13,        // compacte (iOS)
                 }}
               >
-                {availableTypes.map((t) => (
+                {availableTypes.map((tkey) => (
                   <Picker.Item
-                    key={t}
-                    label={t === "all" ? "Tous les types" : t}
-                    value={t}
+                    key={tkey}
+                    label={tkey === "all" ? t("home.filters.allTypes") : t(`createEvent.types.${tkey}`)}
+                    value={tkey}
                   />
                 ))}
               </Picker>
@@ -287,7 +291,7 @@ const handlePressOut = () => {
           >
             <MapPin size={16} color="#3b82f6" style={{ marginRight: 4 }} />
             <Text style={{ color: "#3b82f6", fontSize: 14, fontWeight: "500" }}>
-              Actualiser ma position
+              {t("home.refreshLocation")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -398,73 +402,5 @@ const handlePressOut = () => {
     </Pressable>
   </View>
     </>
-  );
-}
-
-function EventCard({
-  item,
-  isLast = false,
-}: {
-  item: EventItem;
-  isLast?: boolean;
-}) {
-  const router = useRouter();
-
-  return (
-    <TouchableOpacity
-      onPress={() => router.push(`/event_details/${item._id}`)}
-      activeOpacity={0.8}
-    >
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 14,
-          borderRadius: 12,
-          marginTop: 12,
-          marginBottom: isLast ? 24 : 12,
-          borderWidth: 1,
-          borderColor: "#e5e7eb",
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 2,
-          elevation: 1,
-        }}
-      >
-        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 6 }}>
-          {item.name}
-        </Text>
-        {!!item.description && (
-          <Text numberOfLines={2} style={{ color: "#6b7280", marginBottom: 10 }}>
-            {item.description}
-          </Text>
-        )}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Text
-            style={{
-              backgroundColor: "#eef2ff",
-              color: "#4f46e5",
-              paddingVertical: 4,
-              paddingHorizontal: 10,
-              borderRadius: 999,
-              fontSize: 12,
-            }}
-          >
-            {item.type ?? "Événement"}
-          </Text>
-          {!!item.attendees && (
-            <Text style={{ color: "#6b7280", fontSize: 12 }}>
-              {item.attendees.length} participant(s)
-            </Text>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
   );
 }
