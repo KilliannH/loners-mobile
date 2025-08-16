@@ -65,10 +65,6 @@ export default function DrawerLayout() {
     useCallback(() => {
       setStatusBarStyle("light"); // icônes blanches
       setStatusBarBackgroundColor("#000", true); // fond noir Android
-      return () => {
-        // si tu veux rétablir après :
-        // setStatusBarStyle("auto");
-      };
     }, [])
   );
 
@@ -76,32 +72,29 @@ export default function DrawerLayout() {
     <>
       <StatusBar style="light" backgroundColor="#000" />
 
-      {/* Protège aussi le Drawer lui-même */}
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }} edges={["top"]}>
-        <Drawer
-          screenOptions={{
-            headerStyle: { backgroundColor: "#000" },
-            headerTintColor: "#fff",
-            drawerActiveTintColor: "#2563eb",
-            drawerInactiveTintColor: "#111827",
-            // ❌ supprimé: headerStatusBarHeight
-          }}
-          drawerContent={(props) => <CustomDrawerContent {...props} />}
-        >
-          <Drawer.Screen
-            name="index"
-            options={{ drawerLabel: "Home", title: "Home" }}
-          />
-          <Drawer.Screen
-            name="profile"
-            options={{ drawerLabel: "Profile", title: "Profile" }}
-          />
-          <Drawer.Screen
-            name="messages"
-            options={{ drawerLabel: "Messages", title: "Messages" }}
-          />
-        </Drawer>
-      </SafeAreaView>
+      <Drawer
+        screenOptions={{
+          headerStyle: { backgroundColor: "#000" },
+          headerTintColor: "#fff",
+          drawerActiveTintColor: "#2563eb",
+          drawerInactiveTintColor: "#111827",
+          // ❌ ne PAS forcer headerStatusBarHeight
+        }}
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+      >
+        <Drawer.Screen
+          name="index"
+          options={{ drawerLabel: "Home", title: "Home" }}
+        />
+        <Drawer.Screen
+          name="profile"
+          options={{ drawerLabel: "Profile", title: "Profile" }}
+        />
+        <Drawer.Screen
+          name="messages"
+          options={{ drawerLabel: "Messages", title: "Messages" }}
+        />
+      </Drawer>
     </>
   );
 }

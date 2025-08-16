@@ -97,7 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await SecureStore.deleteItemAsync("user");
     setUser(null);
   };
-  console.log("🧩 [AuthProvider] children type:", typeof children, children);
   return (
     <AuthContext.Provider value={{ user, loading, login, signup, logout, loginWithGoogle, setUser, refreshUser }}>
       {children}
