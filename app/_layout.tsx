@@ -1,3 +1,4 @@
+import { registerForPushNotificationsAsync } from "@/hooks/usePushToken";
 import { bindNotificationSocket, preloadUnreadCounts } from "@/services/notificationSocket";
 import socket from "@/services/socket";
 import { Stack } from "expo-router";
@@ -16,8 +17,13 @@ function AuthSocketManager() {
 
   // Log pour debug
   useEffect(() => {
-    console.log("🧪 AuthSocketManager | loading:", loading, "| user:", user);
   }, [loading, user]);
+
+  useEffect(() => {
+    if (user?._id) {
+      registerForPushNotificationsAsync();
+    }
+  }, [user?._id]);
 
   // Connexion socket
   useEffect(() => {

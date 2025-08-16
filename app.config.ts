@@ -26,9 +26,10 @@ const config: ExpoConfig = {
     supportsTablet: true,
     infoPlist: {
       NSLocationWhenInUseUsageDescription: "We use your location to show nearby events.",
-      NSLocationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby events."
+      NSLocationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby events.",
+      ITSAppUsesNonExemptEncryption: false
     },
-    config: { googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS }
+    config: { googleMapsApiKey: undefined }
   },
   android: {
     package: "com.loners.app",

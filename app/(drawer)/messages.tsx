@@ -28,34 +28,39 @@ export default function ChatRoomsScreen() {
 
   const [rooms, setRooms] = useState<RoomItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const unreadByRoom = useNotificationStore((s) => s.unreadByRoom);
   const setUnreadByRoom = useNotificationStore((s) => s.setUnreadByRoom);
 
-  const fetchRoomsAndUnread = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [roomsRes, unreadRes] = await Promise.all([
-        api.get<RoomItem[]>("/chat/rooms"),
-        api.get<{ event: string }[]>("/notifications/unread"),
-      ]);
+  const fetchRoomsAndUnread = useCallback(
+    async (isRefresh = false) => {
+      try {
+        if (isRefresh) setRefreshing(true);
+        else setLoading(true);
 
-      setRooms(roomsRes.data ?? []);
+        const [roomsRes, unreadRes] = await Promise.all([
+          api.get<RoomItem[]>("/chat/rooms"),
+          api.get<{ event: string }[]>("/notifications/unread"),
+        ]);
 
-      // map { eventId: count }
-      const countByRoom: Record<string, number> = {};
-      (unreadRes.data ?? []).forEach((n) => {
-        const id = n.event;
-        countByRoom[id] = (countByRoom[id] || 0) + 1;
-      });
-      setUnreadByRoom(countByRoom);
-    } catch (e) {
-      console.log("❌ chat rooms load error", e);
-      toastError("chatRooms.toast.fetchError");
-    } finally {
-      setLoading(false);
-    }
-  }, [setUnreadByRoom]);
+        setRooms(roomsRes.data ?? []);
+
+        const countByRoom: Record<string, number> = {};
+        (unreadRes.data ?? []).forEach((n) => {
+          countByRoom[n.event] = (countByRoom[n.event] || 0) + 1;
+        });
+        setUnreadByRoom(countByRoom);
+      } catch (e) {
+        console.log("❌ chat rooms load error", e);
+        toastError("chatRooms.toast.fetchError");
+      } finally {
+        if (isRefresh) setRefreshing(false);
+        else setLoading(false);
+      }
+    },
+    [setUnreadByRoom]
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -119,19 +124,21 @@ export default function ChatRoomsScreen() {
 
   return (
     <>
-    <View style={{ flex: 1, padding: 16, backgroundColor: "#f3f4f6" }}>
-      <FlatList
-        data={rooms}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={{ color: "#6b7280", textAlign: "center" }}>
-            {t("chatRooms.noRooms")}
-          </Text>
-        }
-      />
-    </View>
-    <BottomNavigation />
+      <View style={{ flex: 1, padding: 16, backgroundColor: "#f3f4f6" }}>
+        <FlatList
+          data={rooms}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          refreshing={refreshing}
+          onRefresh={() => fetchRoomsAndUnread(true)}
+          ListEmptyComponent={
+            <Text style={{ color: "#6b7280", textAlign: "center" }}>
+              {t("chatRooms.noRooms")}
+            </Text>
+          }
+        />
+      </View>
+      <BottomNavigation />
     </>
   );
 }
