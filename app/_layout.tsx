@@ -1,6 +1,7 @@
 import { registerForPushNotificationsAsync } from "@/hooks/usePushToken";
 import { bindNotificationSocket, preloadUnreadCounts } from "@/services/notificationSocket";
 import socket from "@/services/socket";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { I18nextProvider } from "react-i18next";
@@ -10,6 +11,14 @@ import { AuthContext, AuthProvider } from "../contexts/AuthProvider";
 import "../i18n";
 import i18n from "../i18n";
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
 function AuthSocketManager() {
   const { user, loading } = React.useContext(AuthContext);
   const boundRef = useRef(false);
@@ -18,6 +27,14 @@ function AuthSocketManager() {
   // Log pour debug
   useEffect(() => {
   }, [loading, user]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      console.log("📩 Notification reçue:", notification);
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (user?._id) {
